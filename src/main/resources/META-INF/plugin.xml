@@ -1,0 +1,42 @@
+<idea-plugin>
+    <id>com.rwq.plugins</id>
+    <name>CodeChaos</name>
+    <vendor>rwq</vendor>
+
+    <!-- Product and plugin compatibility requirements -->
+    <!-- https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <applicationService serviceImplementation="com.rwq.plugins.services.MyApplicationService"/>
+        <projectService serviceImplementation="com.rwq.plugins.services.MyProjectService"/>
+        <notification.group groupId="com.rwq.plugins.dialog"/>
+    </extensions>
+
+    <project-components>
+
+
+    </project-components>
+
+    <applicationListeners>
+        <listener class="com.rwq.plugins.listeners.MyProjectManagerListener"
+                  topic="com.intellij.openapi.project.ProjectManagerListener"/>
+    </applicationListeners>
+    <actions>
+        <action id="Rename.RenameClass" class="com.rwq.plugins.an_action.AutoRenameAllClassAction" text="重置所有类名"
+                description="混淆所有类名">
+            <add-to-group group-id="OtherMenu" anchor="first"/>
+        </action>
+        <action id="Rename.RenameSingleClass" class="com.rwq.plugins.an_action.AutoRenameSingleClassAction" text="重置选中元素"
+                description="混淆选中的元素，包括但不限于类名，字段名，方法名。">
+            <add-to-group group-id="OtherMenu" anchor="first"/>
+        </action>
+
+        <action id="Rename.ClearCacheKeys" class="com.rwq.plugins.an_action.ClearCacheKeysAction" text="清除使用过的混淆key"
+                description="清除使用过的混淆key,清除后本次可能出现重复随机码">
+            <add-to-group group-id="OtherMenu" anchor="last"/>
+        </action>
+    </actions>
+
+
+</idea-plugin>
