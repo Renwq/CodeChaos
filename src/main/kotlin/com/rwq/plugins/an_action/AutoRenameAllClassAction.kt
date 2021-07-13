@@ -18,15 +18,14 @@ class AutoRenameAllClassAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         println("rename all class file name")
         val data = e.getData(CommonDataKeys.VIRTUAL_FILE)
-        val app = findSourceFile(data, "app")
-        val indexSourceFile = indexSourceFile(app,e)
+        val indexSourceFile = indexSourceFile(data,e)
         println("indexSourceFile:$indexSourceFile")
 
     }
 
     private fun indexSourceFile(moduleFile: VirtualFile?, e: AnActionEvent): Boolean {
         return if (moduleFile != null) {
-            val src = findSourceFile(moduleFile,"src")
+            val src = findSourceFile(moduleFile, "src")
             if (src != null) {
                 val main = findSourceFile(src, "main")
                 if (main != null) {
@@ -55,13 +54,19 @@ class AutoRenameAllClassAction : AnAction() {
                     val itemPsi = PsiManager.getInstance(e.project!!).findFile(item)
                     val originalElement = itemPsi!!.originalElement
                     if (originalElement != null) {
-                        val lastChild = originalElement.lastChild
-                        action.actionPerformed2(event,lastChild)
+                        val children = originalElement.children
+                        for (psiElement in children) {
+                            val equals = psiElement.javaClass.simpleName.equals("PsiClassImpl")
+                            if(equals){
+                                action.actionPerformed2(event, psiElement)
+                            }
+                        }
+
                     }
 
 
-                   /* val createRename =
-                        RefactoringFactory.getInstance(e.project).createRename(originalElement, "newName");*/
+                    /* val createRename =
+                         RefactoringFactory.getInstance(e.project).createRename(originalElement, "newName");*/
 
                 }
             }

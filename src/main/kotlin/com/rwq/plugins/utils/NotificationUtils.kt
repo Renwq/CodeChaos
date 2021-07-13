@@ -19,7 +19,7 @@ public class NotificationUtils {
             val notification = Notification(createIdWithTitle, null, notificationType)
             notification.setContent(content)
             notification.setTitle(title)
-            Notifications.Bus.notifyAndHide(notification)
+            Notifications.Bus.notify(notification)
         }
 
         fun notifyMsg(title:String,content:String,notificationType:NotificationType) {
