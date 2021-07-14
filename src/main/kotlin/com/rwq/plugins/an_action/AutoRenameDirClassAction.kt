@@ -21,7 +21,7 @@ class AutoRenameDirClassAction : AnAction() {
             NotificationUtils.notifyAndHideMsg("警告", "请选中一个目录！", NotificationType.WARNING)
             return
         }
-        val indexSourceFile = renameThisFiles(data, e)
+        val indexSourceFile = renameThisFiles(data, e,null)
         println("indexSourceFile:$indexSourceFile")
     }
 }
