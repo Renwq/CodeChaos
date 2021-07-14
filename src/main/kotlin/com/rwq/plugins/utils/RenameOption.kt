@@ -8,7 +8,8 @@ package com.rwq.plugins.utils
 data class RenameOption(
     val isRenameClassName: Boolean,
     val isRenameProperty: Boolean,
-    val isRenameMethod: Boolean,
+    val isRenameMethodPar: Boolean = false,
+    val isRenameMethodName: Boolean,
     val isRenameLocalVariable: Boolean,
     val isAddInChaosCode: Boolean
 )

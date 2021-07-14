@@ -5,11 +5,12 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.*
+import com.intellij.psi.impl.java.stubs.JavaStubElementTypes
 import com.intellij.psi.impl.source.PsiClassImpl
 import com.intellij.psi.impl.source.PsiFieldImpl
 import com.intellij.psi.impl.source.PsiMethodImpl
 import com.rwq.plugins.utils.RenameOption
-import org.jetbrains.kotlin.idea.search.declarationsSearch.isOverridableElement
+import org.jetbrains.kotlin.psi.psiUtil.getChildrenOfType
 
 
 /**
@@ -90,21 +91,37 @@ class AutoRenameAllClassAction : AnAction() {
                         val action = AutoRenameElementAction()
                         val event = AnActionEvent.createFromAnAction(action, null, "", e.dataContext)
                         if (renameOption != null) {
-                            if (renameOption.isRenameProperty || renameOption.isRenameMethod) {
+                            if (renameOption.isRenameProperty || renameOption.isRenameMethodPar) {
                                 if (psiClass is PsiClassImpl) {
                                     //是类元素
+                                    val extendsList = psiClass.getStubOrPsiChild(JavaStubElementTypes.EXTENDS_LIST)
+                                    val implementsList =
+                                        psiClass.getStubOrPsiChild(JavaStubElementTypes.IMPLEMENTS_LIST)
                                     for (classElement in psiClass.children) {
                                         if (renameOption.isRenameProperty && classElement is PsiFieldImpl) {
+                                            //是字段元素
                                             action.actionPerformed2(event, classElement)
                                         }
-                                        if (renameOption.isRenameMethod && classElement is PsiMethodImpl) {
-                                            val overridableElement = classElement.isOverridableElement()
-                                            if (overridableElement) {
+                                        if (renameOption.isRenameMethodPar && classElement is PsiMethodImpl) {
+                                            //是方法元素
+                                            val overridableElement = classElement.isConstructor
+                                            val isGetSetMethod =
+                                                classElement.name.startsWith("get") or classElement.name.startsWith("set")
+                                            val isDeprecated = classElement.isDeprecated
+                                            if (overridableElement || isGetSetMethod ||isDeprecated) {
                                                 continue
                                             }
-                                            action.actionPerformed2(event, classElement)
+                                            println(classElement.toString())
+                                            val parameterListContent = classElement.getChildrenOfType<PsiParameterList>()
+                                            for (par in parameterListContent) {
+                                                val parameterList = par.getChildrenOfType<PsiParameter>()
+                                                for (parOne in parameterList) {
+                                                    action.actionPerformed2(event, parOne)
+                                                }
+                                            }
                                         }
                                         if (renameOption.isRenameLocalVariable && classElement is PsiMethodImpl) {
+                                            // 是方法元素要更改 方法内的本地变量
                                             for (methodChild in classElement.children) {
                                                 if (methodChild is PsiCodeBlock) {
                                                     renameLocalVariable(event, methodChild)
@@ -135,17 +152,14 @@ class AutoRenameAllClassAction : AnAction() {
 
         private fun renameLocalVariable(event: AnActionEvent, element: PsiElement) {
             //方法块循环
-            if (element.children.isNotEmpty()) {
-                for (e in element.children) {
-                    if (e is PsiIdentifier) {
-                        val action = AutoRenameElementAction()
-                        val event = AnActionEvent.createFromAnAction(action, null, "", event.dataContext)
-                        action.actionPerformed2(event, e)
-                    } else {
-                        renameLocalVariable(event, element)
-                    }
+            val declarationList = element.getChildrenOfType<PsiDeclarationStatement>()
+            for (e in declarationList) {
+                val localVarList = e.getChildrenOfType<PsiLocalVariable>()
+                for (localVar in localVarList) {
+                    val action = AutoRenameElementAction()
+                    val anActionEvent = AnActionEvent.createFromAnAction(action, null, "", event.dataContext)
+                    action.actionPerformed2(anActionEvent,localVar)
                 }
-
             }
         }
     }

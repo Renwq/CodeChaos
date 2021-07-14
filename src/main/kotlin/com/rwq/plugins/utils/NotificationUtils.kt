@@ -21,7 +21,7 @@ public class NotificationUtils {
             notification.setTitle(title)
             Notifications.Bus.notify(notification)
         }
-
+        @JvmStatic
         fun notifyMsg(title:String,content:String,notificationType:NotificationType) {
             val createIdWithTitle = NotificationGroup.createIdWithTitle("error", title)
             val notification = Notification(createIdWithTitle, null, notificationType)

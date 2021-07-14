@@ -23,18 +23,38 @@
         <listener class="com.rwq.plugins.listeners.MyProjectManagerListener"
                   topic="com.intellij.openapi.project.ProjectManagerListener"/>
     </applicationListeners>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- secondary:true表示设置在tool window bar最下方 -->
+        <toolWindow id="Rename.RenameOptionDialog" anchor="right"
+                    factoryClass="com.rwq.plugins.dialog.RenameOptionDialogFactory" secondary="true"/>
+    </extensions>
+
     <actions>
+        <action id="Rename.RenameDirClassContent" class="com.rwq.plugins.an_action.AutoRenameDirSCContentAction"
+                text="重置目录下所有类内容元素"
+                description="混淆选中的元素，包括但不限于类名，字段名，方法名。">
+            <add-to-group group-id="OtherMenu" anchor="first"/>
+        </action>
+
+        <action id="Rename.RenameSingleClassContent" class="com.rwq.plugins.an_action.AutoRenameSCContentAction"
+                text="重置选中文件类内容元素"
+                description="混淆选中的元素，包括但不限于类名，字段名，方法名。">
+            <add-to-group group-id="OtherMenu" anchor="first"/>
+        </action>
+
         <action id="Rename.RenameClass" class="com.rwq.plugins.an_action.AutoRenameAllClassAction" text="重置模块下所有类名"
                 description="混淆模块下所有类名">
             <add-to-group group-id="OtherMenu" anchor="first"/>
         </action>
+
         <action id="Rename.RenameDirClass" class="com.rwq.plugins.an_action.AutoRenameDirClassAction" text="重置目录下所有类名"
                 description="混淆目录下所有类名">
             <add-to-group group-id="OtherMenu" anchor="first"/>
         </action>
 
         <action id="Rename.RenameSingleClass" class="com.rwq.plugins.an_action.AutoRenameSingleClassAction"
-                text="重置选中元素"
+                text="重置选中文件类名"
                 description="混淆选中的元素，包括但不限于类名，字段名，方法名。">
             <add-to-group group-id="OtherMenu" anchor="first"/>
         </action>
