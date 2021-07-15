@@ -18,9 +18,9 @@ class AutoRenameSCContentAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val data = e.getData(PlatformDataKeys.VIRTUAL_FILE)
         if (data != null) {
-           /* val renameOptionDialog = RenameOptionDialogWrapper()
-            renameOptionDialog.show()*/
-            val renameOption = RenameOption(
+            val renameOptionDialog = RenameOptionDialogWrapper()
+            renameOptionDialog.show()
+            /*val renameOption = RenameOption(
                 isRenameClassName = false,
                 isRenameProperty = false,
                 isRenameMethodPar = true,
@@ -28,7 +28,7 @@ class AutoRenameSCContentAction : AnAction() {
                 isRenameLocalVariable = true,
                 isAddInChaosCode = false
             )
-            renameThisFiles(data, e, renameOption)
+            renameThisFiles(data, e, renameOption)*/
         } else {
             NotificationUtils.notifyAndHideMsg("操作错误", "请先选中类文件后，执行此次操作", NotificationType.ERROR)
         }

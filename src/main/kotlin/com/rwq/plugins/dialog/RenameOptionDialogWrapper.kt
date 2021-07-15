@@ -3,8 +3,12 @@ package com.rwq.plugins.dialog
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.ui.ValidationInfo
+import com.rwq.plugins.utils.GsonUtils
+import com.rwq.plugins.utils.LocalDataUtils
+import com.rwq.plugins.utils.RenameOption
 import java.awt.BorderLayout
 import java.awt.Dimension
+import java.awt.GridLayout
 import java.awt.event.ActionEvent
 import java.awt.event.ItemEvent
 import javax.swing.*
@@ -29,11 +33,24 @@ class RenameOptionDialogWrapper : DialogWrapper(true) {
      * @return
      */
     override fun createCenterPanel(): JComponent? {
+        val data = LocalDataUtils.getData(LocalDataUtils.KEY_RENAME_OPTION)
+        var lastRenameOption: RenameOption? = null
+        if (data == null) {
+            lastRenameOption = RenameOption(
+                isRenameClassName = true,
+                isRenameProperty = false,
+                isRenameMethodPar = true,
+                isRenameMethodName = false,
+                isRenameLocalVariable = true,
+                isAddInChaosCode = false
+            )
+        } else {
+            lastRenameOption = GsonUtils.parseData(data, RenameOption::class.java)
+        }
+
+
         val panel = JPanel()
-        panel.layout = BorderLayout()
-        val label = JLabel("选项")
-        label.preferredSize = Dimension(300, 300)
-        panel.add(label, BorderLayout.CENTER)
+        panel.layout = GridLayout(6, 1)
         mRenameClassNameCB = JCheckBox()
         mRenameClassNameCB!!.text = "重命名类名"
         mRenamePropertyCB = JCheckBox()
@@ -53,12 +70,12 @@ class RenameOptionDialogWrapper : DialogWrapper(true) {
                 mAddInChaosCodeCB!!.isSelected = false
             }
         }
-        panel.add(mRenameClassNameCB, BorderLayout.NORTH)
-        panel.add(mRenamePropertyCB, BorderLayout.NORTH)
-        panel.add(mRenameMethodNameCB, BorderLayout.NORTH)
-        panel.add(mRenameMethodParCB, BorderLayout.NORTH)
-        panel.add(mRenameLocalVariableCB, BorderLayout.NORTH)
-        panel.add(mAddInChaosCodeCB, BorderLayout.NORTH)
+        panel.add(mRenameClassNameCB!!)
+        panel.add(mRenamePropertyCB!!)
+        panel.add(mRenameMethodNameCB!!)
+        panel.add(mRenameMethodParCB!!)
+        panel.add(mRenameLocalVariableCB!!)
+        panel.add(mAddInChaosCodeCB!!)
         return panel
     }
 
