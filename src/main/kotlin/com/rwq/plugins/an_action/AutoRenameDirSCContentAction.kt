@@ -7,6 +7,7 @@ import com.intellij.openapi.actionSystem.PlatformDataKeys
 import com.intellij.ui.components.DialogManager
 import com.rwq.plugins.an_action.AutoRenameAllClassAction.Companion.renameThisFiles
 import com.rwq.plugins.utils.NotificationUtils.Companion.notifyAndHideMsg
+import com.rwq.plugins.utils.RenameOption
 
 /**
  * author： rwq
@@ -19,7 +20,15 @@ class AutoRenameDirSCContentAction : AnAction() {
         if (data == null || !data.isDirectory) {
             notifyAndHideMsg("警告", "请选中要更改的文件夹！", NotificationType.WARNING)
         } else {
-            val indexSourceFile = renameThisFiles(data, e, null)
+            val renameOption = RenameOption(
+                isRenameClassName = false,
+                isRenameProperty = false,
+                isRenameMethodPar = true,
+                false,
+                isRenameLocalVariable = true,
+                isAddInChaosCode = false
+            )
+            val indexSourceFile = renameThisFiles(data, e, renameOption)
             println("indexSourceFile:$indexSourceFile")
         }
     }
