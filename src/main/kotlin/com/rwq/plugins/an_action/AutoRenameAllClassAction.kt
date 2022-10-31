@@ -80,7 +80,7 @@ class AutoRenameAllClassAction : AnAction() {
             }
         }
 
-        private fun doHandler(item: VirtualFile, e: AnActionEvent, renameOption: RenameOption?) {
+        public fun doHandler(item: VirtualFile, e: AnActionEvent, renameOption: RenameOption?) {
             if (item.name.endsWith(".java")) {
                 println("currentRenameFile:" + item.name)
                 val itemPsi = PsiManager.getInstance(e.project!!).findFile(item)

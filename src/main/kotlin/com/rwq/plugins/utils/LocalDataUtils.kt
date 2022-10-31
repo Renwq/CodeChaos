@@ -21,7 +21,7 @@ class LocalDataUtils {
                 return null
             }
             val fileInputStream = FileInputStream(keyFile)
-            val readAllBytes = fileInputStream.readAllBytes()
+            val readAllBytes = fileInputStream.readBytes()
             fileInputStream.close()
             return String(readAllBytes, Charset.forName("utf-8"))
         }

@@ -15,14 +15,27 @@ import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.editor.actionSystem.DocCommandGroupId
 import com.intellij.openapi.progress.ProcessCanceledException
+import com.intellij.openapi.ui.popup.JBPopupFactory
+import com.intellij.openapi.util.ThrowableComputable
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
+import com.intellij.refactoring.InplaceRefactoringContinuation
 import com.intellij.refactoring.RefactoringActionHandler
 import com.intellij.refactoring.RefactoringBundle
 import com.intellij.refactoring.actions.RenameElementAction
+import com.intellij.refactoring.rename.Renamer
+import com.intellij.refactoring.rename.RenamerFactory
 import com.intellij.refactoring.rename.inplace.InplaceRefactoring
 import com.intellij.refactoring.util.CommonRefactoringUtil
+import com.intellij.ui.components.JBLabel
+import com.intellij.util.SlowOperations
+import com.intellij.util.ui.JBEmptyBorder
+import com.intellij.util.ui.UIUtil
 import com.rwq.plugins.handler.AutoPsiElementRenameHandler
+import java.awt.Component
+import java.util.stream.Collectors
+import javax.swing.JList
+import javax.swing.ListCellRenderer
 
 /**
  * author： rwq
@@ -30,20 +43,89 @@ import com.rwq.plugins.handler.AutoPsiElementRenameHandler
  * desc:
  **/
 class AutoRenameElementAction : RenameElementAction() {
-    override fun getHandler(dataContext: DataContext): RefactoringActionHandler? {
+
+    fun getHandler(dataContext: DataContext): RefactoringActionHandler? {
         return AutoPsiElementRenameHandler()
     }
 
-    fun actionPerformed2(e: AnActionEvent, psiElement: PsiElement) {
+     object RenamerRenderer : ListCellRenderer<Renamer> {
+
+        private val myComponent = JBLabel()
+
+        override fun getListCellRendererComponent(list: JList<out Renamer>,
+                                                  value: Renamer,
+                                                  index: Int,
+                                                  isSelected: Boolean,
+                                                  cellHasFocus: Boolean): Component {
+            myComponent.text = value.presentableText
+            myComponent.background = UIUtil.getListBackground(isSelected, cellHasFocus)
+            myComponent.foreground = UIUtil.getListForeground(isSelected, cellHasFocus)
+            myComponent.border = JBEmptyBorder(UIUtil.getListCellPadding())
+            return myComponent
+        }
+    }
+
+
+    //212 版本rename方法
+    fun actionPerformed3(e: AnActionEvent, psiElement: PsiElement) {
         val dataContext = e.dataContext
+        val project = dataContext.getData(CommonDataKeys.PROJECT)
+            ?: return
+        val editor = dataContext.getData(CommonDataKeys.EDITOR)
+        if (editor != null && InplaceRefactoringContinuation.tryResumeInplaceContinuation(
+                project, editor,
+                RenameElementAction::class.java
+            )
+        ) {
+            return
+        }
+
+        if (!PsiDocumentManager.getInstance(project).commitAllDocumentsUnderProgress()) {
+            return
+        }
+
+        val renamers: List<Renamer> = SlowOperations.allowSlowOperations(ThrowableComputable<List<Renamer>, Exception> {
+            val flatMap = RenamerFactory.EP_NAME.extensions().flatMap { factory ->
+                factory.createRenamers(dataContext).stream()
+            }
+            return@ThrowableComputable flatMap.collect(Collectors.toList())
+        })
+        if (renamers.isEmpty()) {
+            val message = RefactoringBundle.getCannotRefactorMessage(
+                RefactoringBundle.message("error.wrong.caret.position.symbol.to.refactor")
+            )
+            CommonRefactoringUtil.showErrorHint(
+                project,
+                e.getData(CommonDataKeys.EDITOR),
+                message,
+                RefactoringBundle.getCannotRefactorMessage(null),
+                null
+            )
+        } else if (renamers.size == 1) {
+            getHandler(dataContext)?.invoke(project, arrayOf(psiElement), dataContext)
+//            renamers[0].performRename()
+        } else {
+            JBPopupFactory.getInstance()
+                .createPopupChooserBuilder(renamers)
+                .setTitle(RefactoringBundle.message("what.would.you.like.to.do"))
+                .setRenderer(RenamerRenderer)
+                .setItemChosenCallback { obj: Renamer -> obj.performRename() }
+                .createPopup()
+                .showInBestPositionFor(dataContext)
+        }
+    }
+
+    fun actionPerformed2(e: AnActionEvent, psiElement: PsiElement) {
+        actionPerformed3(e,psiElement)
+       /* val dataContext = e.dataContext
         val project = e.project ?: return
         val eventCount = IdeEventQueue.getInstance().eventCount
         if (!PsiDocumentManager.getInstance(project).commitAllDocumentsUnderProgress()) {
             return
         }
         IdeEventQueue.getInstance().eventCount = eventCount
-        val editor = e.getData(CommonDataKeys.EDITOR)
-        val elements  = arrayOf(psiElement)
+        val editor = dataContext.getData(CommonDataKeys.EDITOR)
+        val elements = arrayOf(psiElement)
         val handler: RefactoringActionHandler? = try {
             getHandler(dataContext)
         } catch (ignored: ProcessCanceledException) {
@@ -63,8 +145,7 @@ class AutoRenameElementAction : RenameElementAction() {
         }
         val activeInplaceRenamer = InplaceRefactoring.getActiveInplaceRenamer(editor)
         if (!InplaceRefactoring.canStartAnotherRefactoring(
-                editor,
-                project,
+                editor!!,
                 handler,
                 *elements
             ) && activeInplaceRenamer != null
@@ -104,7 +185,7 @@ class AutoRenameElementAction : RenameElementAction() {
             handler.invoke(project, editor, file, dataContext)
         } else {
             handler.invoke(project, elements, dataContext)
-        }
+        }*/
     }
 
 

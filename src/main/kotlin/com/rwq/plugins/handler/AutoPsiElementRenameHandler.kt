@@ -1,8 +1,10 @@
 package com.rwq.plugins.handler
 
+import com.intellij.core.CoreInjectedLanguageManager
 import com.intellij.featureStatistics.FeatureUsageTracker
 import com.intellij.ide.scratch.ScratchUtil
 import com.intellij.lang.LangBundle
+import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.application.ApplicationManager
@@ -13,7 +15,7 @@ import com.intellij.openapi.ui.Messages
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
-import com.intellij.psi.impl.source.tree.injected.InjectedLanguageUtil
+import com.intellij.psi.impl.source.tree.injected.InjectedLanguageUtilBase.findElementAtNoCommit
 import com.intellij.psi.util.PsiUtilCore
 import com.intellij.refactoring.RefactoringBundle
 import com.intellij.refactoring.actions.BaseRefactoringAction
@@ -43,7 +45,7 @@ class AutoPsiElementRenameHandler : PsiElementRenameHandler() {
         }
 
         editor!!.scrollingModel.scrollToCaret(ScrollType.MAKE_VISIBLE)
-        val nameSuggestionContext = InjectedLanguageUtil.findElementAtNoCommit(file!!, editor!!.caretModel.offset)
+        val nameSuggestionContext = InjectedLanguageManager.getInstance(project).findInjectedElementAt(file!!, editor!!.caretModel.offset)
         invoke(element!!, project, nameSuggestionContext, editor, shouldCheckInProject())
     }
 

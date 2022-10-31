@@ -102,7 +102,7 @@ class RenameOptionDialogWrapper : DialogWrapper(true) {
     /**
      * 自定义 ok Action
      */
-    protected open inner class CustomOKAction() : DialogWrapperAction("自定义ok按钮") {
+    protected open inner class CustomOKAction() : DialogWrapperAction("好的") {
         override fun doAction(e: ActionEvent) {
             // 点击ok的时候进行数据校验
             val validationInfo = doValidate()
