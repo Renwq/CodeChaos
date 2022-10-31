@@ -1,9 +1,11 @@
 package com.rwq.plugins.an_action
 
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.vfs.VirtualFile
+import com.rwq.plugins.utils.NotificationUtils
 import com.rwq.plugins.utils.RenameOption
 
 /**
@@ -15,45 +17,15 @@ class AutoRenameEndWithAFClassAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         println("rename all class file name")
         val data = e.getData(CommonDataKeys.VIRTUAL_FILE)
-        val indexSourceFile = indexSourceFile(data, e)
+        if (data == null) {
+            NotificationUtils.notifyAndHideMsg("警告", "请选中一个目录！", NotificationType.WARNING)
+            return
+        }
+        val indexSourceFile = renameThisFiles(data, e, null)
         println("indexSourceFile:$indexSourceFile")
     }
 
     companion object {
-        @JvmStatic
-        public fun indexSourceFile(moduleFile: VirtualFile?, e: AnActionEvent): Boolean {
-            return if (moduleFile != null) {
-                val src = findSourceFile(moduleFile, "src")
-                if (src != null) {
-                    val main = findSourceFile(src, "main")
-                    if (main != null) {
-                        val java = findSourceFile(main, "java")
-                        if (java != null) {
-                            renameThisFiles(java, e, null)
-                            return true
-                        }
-                    }
-                }
-                false
-            } else {
-                false
-            }
-        }
-
-        @JvmStatic
-        public fun findSourceFile(children: VirtualFile?, fileName: String): VirtualFile? {
-            if (children != null) {
-                for (itemFile in children.children) {
-                    if (itemFile.name == fileName) {
-                        return itemFile
-                    }
-                }
-                return null
-            } else {
-                return null
-            }
-        }
-
         @JvmStatic
         public fun renameThisFiles(java: VirtualFile, e: AnActionEvent, renameOption: RenameOption?) {
             if (java.isDirectory) {
